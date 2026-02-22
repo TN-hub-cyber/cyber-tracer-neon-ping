@@ -56,6 +56,26 @@ describe('parseTraceLine — Linux (unix)', () => {
     const result = parseTraceLine(line, platform)
     expect(Object.isFrozen(result)).toBe(true)
   })
+
+  it('sets partialLoss true when some probes are * (partial timeout)', () => {
+    const line = ' 3  192.168.1.1  * 2.345 ms *'
+    const result = parseTraceLine(line, platform)
+    expect(result.partialLoss).toBe(true)
+    expect(result.timedOut).toBe(false)
+  })
+
+  it('sets partialLoss false on a normal hop with no stars', () => {
+    const line = ' 1  203.0.113.1  1.234 ms  1.456 ms  1.789 ms'
+    const result = parseTraceLine(line, platform)
+    expect(result.partialLoss).toBe(false)
+  })
+
+  it('sets partialLoss false on a full timeout (* * *)', () => {
+    const line = ' 2  * * *'
+    const result = parseTraceLine(line, platform)
+    expect(result.partialLoss).toBe(false)
+    expect(result.timedOut).toBe(true)
+  })
 })
 
 describe('parseTraceLine — Windows (win32)', () => {

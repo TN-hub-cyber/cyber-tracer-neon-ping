@@ -52,6 +52,7 @@ function parseLinuxLine(line) {
         parseFloat(fullMatch[5]),
       ],
       timedOut: false,
+      partialLoss: false,
     })
   }
 
@@ -66,7 +67,7 @@ function parseLinuxLine(line) {
 
   // All stars = full timeout
   if (/^\*\s*\*\s*\*$/.test(rest)) {
-    return Object.freeze({ hop: hopNum, ip: null, latencies: [], timedOut: true })
+    return Object.freeze({ hop: hopNum, ip: null, latencies: [], timedOut: true, partialLoss: false })
   }
 
   // Extract IP (first token that looks like an IP)
@@ -84,7 +85,7 @@ function parseLinuxLine(line) {
   const hasStars = rest.includes('*')
   const timedOut = hasStars && latencies.length === 0
 
-  return Object.freeze({ hop: hopNum, ip, latencies, timedOut })
+  return Object.freeze({ hop: hopNum, ip, latencies, timedOut, partialLoss: hasStars && latencies.length > 0 })
 }
 
 function parseWindowsLine(line) {
@@ -96,6 +97,7 @@ function parseWindowsLine(line) {
       ip: null,
       latencies: [],
       timedOut: true,
+      partialLoss: false,
     })
   }
 
@@ -124,5 +126,6 @@ function parseWindowsLine(line) {
     ip: ipMatch[1],
     latencies,
     timedOut: false,
+    partialLoss: false,
   })
 }
