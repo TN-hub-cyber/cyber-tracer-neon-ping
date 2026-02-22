@@ -38,7 +38,7 @@ function projectToScreen(worldPos, camera) {
 }
 
 /** Allowlisted hop types for safe CSS class interpolation. */
-const ALLOWED_TYPES = new Set(['normal', 'hostile', 'ghost'])
+const ALLOWED_TYPES = new Set(['normal', 'hostile', 'ghost', 'lossy'])
 
 /**
  * Create the node label manager.

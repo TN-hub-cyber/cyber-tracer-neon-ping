@@ -222,6 +222,20 @@ html, body {
   color: rgba(170, 204, 255, 0.5);
 }
 
+/* lossy hop card */
+.intel-card--lossy {
+  border-color: rgba(255, 170, 0, 0.4);
+  animation: card-appear 0.3s ease-out;
+}
+
+.intel-card--lossy .intel-card__header {
+  color: #ffaa00;
+}
+
+.intel-card--lossy .intel-card__body {
+  color: rgba(255, 170, 0, 0.8);
+}
+
 .intel-card__header {
   padding: 5px 10px;
   font-size: 10px;
@@ -293,6 +307,11 @@ html, body {
   text-shadow: 0 0 4px rgba(170, 204, 255, 0.3);
   font-style: italic;
   opacity: 0.6 !important;
+}
+
+.node-label--lossy {
+  color: #ffaa00;
+  text-shadow: 0 0 8px rgba(255, 170, 0, 0.7);
 }
 
 /* ── Input bar ── */

@@ -37,7 +37,7 @@ function cardHeader(intel) {
   const prefix = {
     hostile: `[!] HOSTILE >> HOP ${intel.hop}`,
     ghost:   `[?] GHOST >> HOP ${intel.hop}`,
-    normal:  `[+] INTEL >> HOP ${intel.hop}`,
+    lossy:   `[~] LOSSY >> HOP ${intel.hop}`,
   }[intel.type] ?? `[+] INTEL >> HOP ${intel.hop}`
   return `${prefix} ${'═'.repeat(Math.max(0, 28 - prefix.length))}`
 }
@@ -61,7 +61,7 @@ function typewriterReveal(pre, fullText, charMs) {
 }
 
 /** Allowlisted hop types for safe CSS class interpolation. */
-const ALLOWED_TYPES = new Set(['normal', 'hostile', 'ghost'])
+const ALLOWED_TYPES = new Set(['normal', 'hostile', 'ghost', 'lossy'])
 
 /**
  * Create the intel panel controller.
