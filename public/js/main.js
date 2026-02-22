@@ -6,6 +6,7 @@ import { createCameraController } from './camera/cameraController.js'
 import { createNodeManager }      from './network/nodeManager.js'
 import { createLinkManager }      from './network/linkManager.js'
 import { createPulseManager }     from './network/pulseManager.js'
+import { resolveColor }           from './network/colors.js'
 import { createHUD }              from './ui/hud.js'
 import { createConsole }          from './ui/console.js'
 
@@ -77,11 +78,7 @@ socket.on('trace-hop', (hop) => {
     ? (nextStats.timedOutHops / nextStats.totalHops) * 100
     : null
 
-  hud.update({
-    hopCount: nextStats.totalHops,
-    avgLatency,
-    packetLoss,
-  })
+  hud.update({ hopCount: nextStats.totalHops, avgLatency, packetLoss })
 })
 
 socket.on('trace-raw', (line) => {
@@ -164,14 +161,14 @@ const clock = new THREE.Clock()
 
 function animate() {
   requestAnimationFrame(animate)
-  const delta = clock.getDelta()
+  const delta   = clock.getDelta()
   const elapsed = clock.getElapsedTime()
 
   updateGrid(elapsed)
   cam.update(delta)
   pulses.update(delta)
 
-  // Gentle node scale pulse
+  // Gentle node scale pulse — Three.js requires in-place mutation of scale
   for (const { mesh } of nodes.getNodes()) {
     const s = 1 + Math.sin(elapsed * 2 + mesh.position.x) * 0.05
     mesh.scale.setScalar(s)
@@ -181,12 +178,3 @@ function animate() {
 }
 
 animate()
-
-// ── Helpers ────────────────────────────────────────────────
-function resolveColor(latencies, timedOut) {
-  if (timedOut || latencies.length === 0) return 0x444466
-  const avg = latencies.reduce((a, b) => a + b, 0) / latencies.length
-  if (avg < 50)  return 0x00ff41
-  if (avg < 150) return 0xffff00
-  return 0xff0040
-}

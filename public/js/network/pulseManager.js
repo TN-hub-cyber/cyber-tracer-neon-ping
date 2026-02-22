@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 
-const PULSE_SPEED  = 0.6   // units per second
+const PULSE_SPEED  = 0.6
 const PULSE_RADIUS = 0.08
 const PULSES_PER_LINK = 2
 
@@ -23,7 +23,6 @@ export function createPulseManager(scene) {
     for (let i = 0; i < PULSES_PER_LINK; i++) {
       const material = new THREE.MeshBasicMaterial({ color })
       const mesh = new THREE.Mesh(pulseGeometry, material)
-      // Stagger the starting progress so pulses don't overlap
       const progress = i / PULSES_PER_LINK
       mesh.position.lerpVectors(fromPos, toPos, progress)
       scene.add(mesh)
@@ -39,6 +38,7 @@ export function createPulseManager(scene) {
 
   /**
    * Update all pulse positions. Call every frame.
+   * Three.js requires in-place mutation of Vector3 — intentional exception to immutability rules.
    * @param {number} delta - Seconds since last frame
    */
   function update(delta) {
@@ -57,5 +57,11 @@ export function createPulseManager(scene) {
     pulses = []
   }
 
-  return { addPulse, update, clear }
+  // Call on final app teardown to free GPU memory
+  function destroy() {
+    clear()
+    pulseGeometry.dispose()
+  }
+
+  return { addPulse, update, clear, destroy }
 }

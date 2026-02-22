@@ -40,13 +40,21 @@ export function runTrace(target, callbacks) {
 
   let lineBuffer = ''
   let cancelled = false
+  let completed = false
+
+  // Guard against double-completion (error + close both fire in Node.js)
+  function complete() {
+    if (completed) return
+    completed = true
+    callbacks.onComplete()
+  }
 
   const timeout = setTimeout(() => {
     if (!cancelled) {
       cancelled = true
       child.kill()
       callbacks.onError('Trace timed out after 60 seconds')
-      callbacks.onComplete()
+      complete()
     }
   }, MAX_RUNTIME_MS)
 
@@ -63,7 +71,6 @@ export function runTrace(target, callbacks) {
   child.stdout.on('data', (chunk) => {
     lineBuffer += chunk.toString()
     const lines = lineBuffer.split('\n')
-    // Keep the last (potentially incomplete) segment in the buffer
     lineBuffer = lines.pop() ?? ''
     for (const line of lines) {
       processLine(line)
@@ -84,16 +91,15 @@ export function runTrace(target, callbacks) {
     } else {
       callbacks.onError(`Process error: ${err.message}`)
     }
-    callbacks.onComplete()
+    complete()
   })
 
   child.on('close', () => {
     clearTimeout(timeout)
     if (!cancelled) {
-      // Flush any remaining buffered data
       if (lineBuffer.trim()) processLine(lineBuffer)
       lineBuffer = ''
-      callbacks.onComplete()
+      complete()
     }
   })
 

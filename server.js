@@ -11,18 +11,29 @@ const PORT = process.env.PORT ?? 3000
 
 const app = express()
 const httpServer = createServer(app)
-const io = new Server(httpServer)
+
+// CRITICAL-2: Restrict CORS to same origin only (prevents CSWSH attacks)
+const io = new Server(httpServer, {
+  cors: {
+    origin: `http://localhost:${PORT}`,
+    methods: ['GET', 'POST'],
+  },
+})
+
+// HIGH-4: Per-IP rate limiting (not per-socket, to prevent bypass via multiple connections)
+const rateLimitMap = new Map()
+const COOLDOWN_MS = 2000
 
 app.use(express.static(join(__dirname, 'public')))
 
 io.on('connection', (socket) => {
   let activeCancelFn = null
-  let lastTraceAt = 0
-  const COOLDOWN_MS = 2000
+  const clientIp = socket.handshake.address
 
   socket.on('start-trace', ({ target } = {}) => {
-    // Rate limit: 2 second cooldown between traces
+    // Rate limit by IP address
     const now = Date.now()
+    const lastTraceAt = rateLimitMap.get(clientIp) ?? 0
     if (now - lastTraceAt < COOLDOWN_MS) {
       socket.emit('trace-error', 'Please wait before starting another trace.')
       return
@@ -35,13 +46,13 @@ io.on('connection', (socket) => {
       return
     }
 
-    // Cancel any running trace
+    // Cancel any running trace for this socket
     if (activeCancelFn) {
       activeCancelFn()
       activeCancelFn = null
     }
 
-    lastTraceAt = now
+    rateLimitMap.set(clientIp, now)
 
     const { cancel } = runTrace(validation.target, {
       onHop(hop) {
@@ -80,5 +91,5 @@ io.on('connection', (socket) => {
 })
 
 httpServer.listen(PORT, () => {
-  console.log(`CyberTracer running at http://localhost:${PORT}`)
+  process.stdout.write(`CyberTracer running at http://localhost:${PORT}\n`)
 })

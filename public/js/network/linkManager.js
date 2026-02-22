@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { resolveColor } from './colors.js'
 
 /**
  * Manages colored lines connecting hop nodes.
@@ -44,12 +45,4 @@ export function createLinkManager(scene) {
   }
 
   return { addLink, getLinks, clear }
-}
-
-function resolveColor(latencies, timedOut) {
-  if (timedOut || latencies.length === 0) return 0x444466
-  const avg = latencies.reduce((a, b) => a + b, 0) / latencies.length
-  if (avg < 50)  return 0x00ff41
-  if (avg < 150) return 0xffff00
-  return 0xff0040
 }

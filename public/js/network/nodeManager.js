@@ -1,21 +1,5 @@
 import * as THREE from 'three'
-
-// Latency thresholds (ms)
-const FAST_THRESHOLD   = 50
-const MEDIUM_THRESHOLD = 150
-
-const COLOR_FAST    = new THREE.Color(0x00ff41)  // green
-const COLOR_MEDIUM  = new THREE.Color(0xffff00)  // yellow
-const COLOR_SLOW    = new THREE.Color(0xff0040)  // red
-const COLOR_TIMEOUT = new THREE.Color(0x444466)  // dim blue-grey
-
-function latencyColor(latencies, timedOut) {
-  if (timedOut || latencies.length === 0) return COLOR_TIMEOUT
-  const avg = latencies.reduce((a, b) => a + b, 0) / latencies.length
-  if (avg < FAST_THRESHOLD)   return COLOR_FAST
-  if (avg < MEDIUM_THRESHOLD) return COLOR_MEDIUM
-  return COLOR_SLOW
-}
+import { resolveColor } from './colors.js'
 
 /**
  * Manages wireframe icosahedron nodes in the 3D scene.
@@ -32,13 +16,9 @@ export function createNodeManager(scene) {
    * @returns {{ mesh: THREE.Mesh, light: THREE.PointLight, position: THREE.Vector3, hop: object }}
    */
   function addNode(hop) {
-    const color = latencyColor(hop.latencies, hop.timedOut)
+    const color = resolveColor(hop.latencies, hop.timedOut)
 
-    const material = new THREE.MeshBasicMaterial({
-      color,
-      wireframe: true,
-    })
-
+    const material = new THREE.MeshBasicMaterial({ color, wireframe: true })
     const mesh = new THREE.Mesh(nodeGeometry, material)
 
     // Spread nodes along X axis with slight organic Y/Z variation
@@ -49,7 +29,7 @@ export function createNodeManager(scene) {
     mesh.position.copy(position)
 
     // Small point light at each node for local glow
-    const light = new THREE.PointLight(color.getHex(), 1.5, 5)
+    const light = new THREE.PointLight(color, 1.5, 5)
     light.position.copy(position)
 
     scene.add(mesh)
@@ -77,5 +57,11 @@ export function createNodeManager(scene) {
     nodes = []
   }
 
-  return { addNode, getNodes, getLastNode, clear }
+  // Call on final app teardown to free GPU memory
+  function destroy() {
+    clear()
+    nodeGeometry.dispose()
+  }
+
+  return { addNode, getNodes, getLastNode, clear, destroy }
 }
