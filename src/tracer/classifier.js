@@ -21,40 +21,44 @@ function avgLatency(latencies) {
 }
 
 /**
- * Classify a hop as 'normal', 'hostile', or 'ghost'.
+ * Classify a hop as 'normal', 'hostile', 'ghost', or 'lossy'.
  *
  * @param {import('./parser.js').HopResult} hop       Current hop
  * @param {import('./parser.js').HopResult|null} prevHop  Previous hop (null if first)
- * @returns {{ type: 'normal'|'hostile'|'ghost', latencyDelta: number|null }}
+ * @returns {{ type: 'normal'|'hostile'|'ghost'|'lossy', latencyDelta: number|null, lossRate: number|null }}
  */
 export function classifyHop(hop, prevHop) {
-  // Ghost: timed-out hop — router exists but won't respond
+  // Ghost: full timeout
   if (hop.timedOut) {
-    return { type: 'ghost', latencyDelta: null }
+    return { type: 'ghost', latencyDelta: null, lossRate: null }
+  }
+
+  // Lossy: partial probe timeout (some * in output)
+  if (hop.partialLoss) {
+    const lossRate = Math.round(((3 - hop.latencies.length) / 3) * 100) / 100
+    return { type: 'lossy', latencyDelta: null, lossRate }
   }
 
   // First hop or after a ghost: no baseline for comparison
   if (!prevHop || prevHop.timedOut) {
-    return { type: 'normal', latencyDelta: null }
+    return { type: 'normal', latencyDelta: null, lossRate: null }
   }
 
   const currAvg = avgLatency(hop.latencies)
   const prevAvg = avgLatency(prevHop.latencies)
 
   if (currAvg === null || prevAvg === null) {
-    return { type: 'normal', latencyDelta: null }
+    return { type: 'normal', latencyDelta: null, lossRate: null }
   }
 
   const delta = currAvg - prevAvg
   const roundedDelta = Math.round(delta)
 
-  const isHostile = delta > HOSTILE_DELTA_MS
-
-  if (isHostile) {
-    return { type: 'hostile', latencyDelta: roundedDelta }
+  if (delta > HOSTILE_DELTA_MS) {
+    return { type: 'hostile', latencyDelta: roundedDelta, lossRate: null }
   }
 
-  return { type: 'normal', latencyDelta: roundedDelta }
+  return { type: 'normal', latencyDelta: roundedDelta, lossRate: null }
 }
 
 /**
@@ -66,6 +70,6 @@ export function classifyHop(hop, prevHop) {
  * @returns {import('./parser.js').HopResult & { type: string, latencyDelta: number|null }}
  */
 export function enrichHop(hop, prevHop) {
-  const { type, latencyDelta } = classifyHop(hop, prevHop)
-  return Object.freeze({ ...hop, type, latencyDelta })
+  const { type, latencyDelta, lossRate } = classifyHop(hop, prevHop)
+  return Object.freeze({ ...hop, type, latencyDelta, lossRate })
 }

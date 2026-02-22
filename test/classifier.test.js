@@ -8,6 +8,9 @@ const makeHop = (hop, ip, latencies) =>
 const makeGhostHop = (hop) =>
   Object.freeze({ hop, ip: null, latencies: [], timedOut: true })
 
+const makeLossyHop = (hop, ip, latencies) =>
+  Object.freeze({ hop, ip, latencies, timedOut: false, partialLoss: true })
+
 // ── classifyHop ───────────────────────────────────────────
 describe('classifyHop', () => {
   describe('ghost classification', () => {
@@ -65,6 +68,33 @@ describe('classifyHop', () => {
       const hop  = makeHop(2, '1.1.1.2', [40, 40, 40])
       const result = classifyHop(hop, prev)
       expect(result.latencyDelta).toBe(20)
+    })
+  })
+
+  describe('lossy classification', () => {
+    it('should classify partial-loss hop as lossy', () => {
+      const hop = makeLossyHop(2, '10.0.0.1', [5])   // 1 success, 2 dropped = 67%
+      const result = classifyHop(hop, null)
+      expect(result.type).toBe('lossy')
+    })
+
+    it('should set lossRate to 0.33 when 1 of 3 probes dropped', () => {
+      const hop = makeLossyHop(2, '10.0.0.1', [5, 6]) // 2 success, 1 dropped
+      const result = classifyHop(hop, null)
+      expect(result.lossRate).toBeCloseTo(0.33, 1)
+    })
+
+    it('should set lossRate to 0.67 when 2 of 3 probes dropped', () => {
+      const hop = makeLossyHop(2, '10.0.0.1', [5])    // 1 success, 2 dropped
+      const result = classifyHop(hop, null)
+      expect(result.lossRate).toBeCloseTo(0.67, 1)
+    })
+
+    it('should classify lossy before hostile (even with large delta)', () => {
+      const prev = makeHop(1, '1.1.1.1', [10, 10, 10])
+      const hop  = makeLossyHop(2, '10.0.0.1', [200]) // large delta but lossy wins
+      const result = classifyHop(hop, prev)
+      expect(result.type).toBe('lossy')
     })
   })
 
@@ -143,5 +173,12 @@ describe('enrichHop', () => {
     const enriched = enrichHop(hop, prev)
     expect(enriched.type).toBe('hostile')
     expect(enriched.latencyDelta).toBe(190)
+  })
+
+  it('should classify lossy hop correctly via enrichHop', () => {
+    const hop = makeLossyHop(2, '10.0.0.1', [5])
+    const enriched = enrichHop(hop, null)
+    expect(enriched.type).toBe('lossy')
+    expect(enriched.lossRate).toBeCloseTo(0.67, 1)
   })
 })
