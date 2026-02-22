@@ -54,9 +54,21 @@ export function createConsole() {
     appendLine('  STATUS  : ANOMALOUS ROUTING', 'warning')
   }
 
+  /**
+   * Append an amber warning block for a lossy (partial packet loss) hop.
+   * @param {{ hop: number, lossRate: number }} hop
+   */
+  function addLossWarning(hop) {
+    const pct = Math.round((hop.lossRate ?? 0) * 100)
+    const dropped = Math.round((hop.lossRate ?? 0) * 3)
+    appendLine(`[LOSS] HOP ${hop.hop} — ${pct}% PACKET LOSS`, 'loss')
+    appendLine(`  PROBES  : ${dropped}/3 dropped`, 'loss')
+    appendLine('  STATUS  : DEGRADED SIGNAL', 'loss')
+  }
+
   function clear() {
     container.replaceChildren()
   }
 
-  return { appendLine, addIntel, addWarning, clear }
+  return { appendLine, addIntel, addWarning, addLossWarning, clear }
 }
