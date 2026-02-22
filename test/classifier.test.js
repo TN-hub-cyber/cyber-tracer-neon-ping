@@ -3,7 +3,7 @@ import { classifyHop, enrichHop } from '../src/tracer/classifier.js'
 
 // ── Helpers ───────────────────────────────────────────────
 const makeHop = (hop, ip, latencies) =>
-  Object.freeze({ hop, ip, latencies, timedOut: false })
+  Object.freeze({ hop, ip, latencies, timedOut: false, partialLoss: false })
 
 const makeGhostHop = (hop) =>
   Object.freeze({ hop, ip: null, latencies: [], timedOut: true })

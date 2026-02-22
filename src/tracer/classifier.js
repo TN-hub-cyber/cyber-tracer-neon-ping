@@ -2,6 +2,7 @@
  * Classifies traceroute hops into normal / hostile / ghost types.
  *
  * ghost   — timedOut === true (router exists but doesn't respond)
+ * lossy   — partialLoss === true (some probes dropped, others responded)
  * hostile — latency spikes abruptly vs previous hop
  * normal  — everything else
  */
@@ -67,7 +68,7 @@ export function classifyHop(hop, prevHop) {
  *
  * @param {import('./parser.js').HopResult} hop
  * @param {import('./parser.js').HopResult|null} prevHop
- * @returns {import('./parser.js').HopResult & { type: string, latencyDelta: number|null }}
+ * @returns {import('./parser.js').HopResult & { type: string, latencyDelta: number|null, lossRate: number|null }}
  */
 export function enrichHop(hop, prevHop) {
   const { type, latencyDelta, lossRate } = classifyHop(hop, prevHop)
