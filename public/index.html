@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -23,6 +23,9 @@
   <!-- Three.js canvas -->
   <canvas id="scene-canvas"></canvas>
 
+  <!-- CRT noise overlay canvas (hostile hop effect) -->
+  <canvas id="crt-canvas"></canvas>
+
   <!-- HUD overlays -->
   <div id="hud" aria-live="polite">
     <div id="hud-tl" class="hud-panel">
@@ -43,6 +46,15 @@
     </div>
     <div id="hud-status">IDLE</div>
   </div>
+
+  <!-- Intel side panel (right edge) -->
+  <div id="intel-panel" aria-label="Network intelligence">
+    <div id="intel-header">// INTEL STREAM //</div>
+    <div id="intel-cards"></div>
+  </div>
+
+  <!-- Floating node labels (positioned by JS via 3D projection) -->
+  <div id="node-labels" aria-hidden="true"></div>
 
   <!-- Input bar -->
   <div id="input-bar">

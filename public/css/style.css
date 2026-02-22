@@ -9,14 +9,17 @@
 }
 
 :root {
-  --neon-cyan:   #00ffff;
-  --neon-green:  #00ff41;
-  --neon-red:    #ff0040;
-  --neon-yellow: #ffff00;
-  --bg:          #050508;
-  --panel-bg:    rgba(0, 255, 255, 0.05);
-  --panel-border:rgba(0, 255, 255, 0.3);
-  --font:        'Share Tech Mono', monospace;
+  --neon-cyan:    #00ffff;
+  --neon-green:   #00ff41;
+  --neon-red:     #ff2200;
+  --neon-yellow:  #ffff00;
+  --neon-ghost:   #aaccff;
+  --neon-intel:   #00ddff;
+  --neon-warning: #ff6600;
+  --bg:           #050508;
+  --panel-bg:     rgba(0, 255, 255, 0.05);
+  --panel-border: rgba(0, 255, 255, 0.3);
+  --font:         'Share Tech Mono', monospace;
 }
 
 html, body {
@@ -37,6 +40,16 @@ html, body {
   display: block;
 }
 
+/* ── CRT noise overlay canvas ── */
+#crt-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 50;
+}
+
 /* ── HUD (pointer-events: none so canvas gets mouse events) ── */
 #hud {
   position: fixed;
@@ -55,9 +68,9 @@ html, body {
 }
 
 #hud-tl { top: 20px;    left: 20px; }
-#hud-tr { top: 20px;    right: 20px; text-align: right; }
+#hud-tr { top: 20px;    right: 340px; text-align: right; }
 #hud-bl { bottom: 220px; left: 20px; }
-#hud-br { bottom: 220px; right: 20px; text-align: right; }
+#hud-br { bottom: 220px; right: 340px; text-align: right; }
 
 .hud-label {
   font-size: 9px;
@@ -99,6 +112,187 @@ html, body {
     rgba(0, 255, 255, 0.02) 4px
   );
   pointer-events: none;
+}
+
+/* ── Intel side panel ── */
+#intel-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 180px;
+  width: 320px;
+  background: rgba(0, 5, 15, 0.88);
+  border-left: 1px solid rgba(0, 221, 255, 0.2);
+  z-index: 15;
+  display: flex;
+  flex-direction: column;
+  backdrop-filter: blur(4px);
+  overflow: hidden;
+}
+
+#intel-header {
+  padding: 10px 14px;
+  font-size: 10px;
+  letter-spacing: 4px;
+  color: rgba(0, 221, 255, 0.5);
+  border-bottom: 1px solid rgba(0, 221, 255, 0.15);
+  text-transform: uppercase;
+  flex-shrink: 0;
+  animation: intel-header-pulse 4s ease-in-out infinite;
+}
+
+@keyframes intel-header-pulse {
+  0%, 100% { opacity: 0.5; }
+  50%       { opacity: 0.9; }
+}
+
+#intel-cards {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 221, 255, 0.2) transparent;
+}
+
+/* ── Intel card base ── */
+.intel-card {
+  margin: 4px 8px;
+  border: 1px solid;
+  background: rgba(0, 0, 0, 0.5);
+  animation: card-appear 0.3s ease-out;
+}
+
+@keyframes card-appear {
+  from { opacity: 0; transform: translateX(16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* normal hop card */
+.intel-card--normal {
+  border-color: rgba(0, 221, 255, 0.3);
+}
+.intel-card--normal .intel-card__header {
+  color: var(--neon-intel);
+  text-shadow: 0 0 6px rgba(0, 221, 255, 0.5);
+  background: rgba(0, 221, 255, 0.05);
+}
+.intel-card--normal .intel-card__body {
+  color: rgba(0, 221, 255, 0.75);
+}
+
+/* hostile hop card */
+.intel-card--hostile {
+  border-color: rgba(255, 34, 0, 0.5);
+  box-shadow: 0 0 8px rgba(255, 34, 0, 0.15) inset;
+  animation: card-appear 0.3s ease-out, hostile-card-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes hostile-card-pulse {
+  0%, 100% { border-color: rgba(255, 34, 0, 0.5); }
+  50%       { border-color: rgba(255, 34, 0, 0.9); }
+}
+
+.intel-card--hostile .intel-card__header {
+  color: var(--neon-red);
+  text-shadow: 0 0 8px rgba(255, 34, 0, 0.7);
+  background: rgba(255, 34, 0, 0.08);
+  animation: hostile-flicker 0.15s steps(1) 3;
+}
+
+@keyframes hostile-flicker {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+.intel-card--hostile .intel-card__body {
+  color: rgba(255, 100, 60, 0.85);
+}
+
+/* ghost hop card */
+.intel-card--ghost {
+  border-color: rgba(170, 204, 255, 0.2);
+  opacity: 0.75;
+}
+.intel-card--ghost .intel-card__header {
+  color: var(--neon-ghost);
+  text-shadow: 0 0 6px rgba(170, 204, 255, 0.3);
+  background: rgba(170, 204, 255, 0.04);
+}
+.intel-card--ghost .intel-card__body {
+  color: rgba(170, 204, 255, 0.5);
+}
+
+.intel-card__header {
+  padding: 5px 10px;
+  font-size: 10px;
+  letter-spacing: 1px;
+  font-weight: bold;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.intel-card__body {
+  padding: 6px 10px;
+  font-size: 10px;
+  line-height: 1.6;
+  font-family: var(--font);
+  white-space: pre;
+  min-height: 2em;
+}
+
+/* ── Node labels (floating above 3D nodes) ── */
+#node-labels {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 20;
+}
+
+.node-label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  font-family: var(--font);
+  font-size: 9px;
+  letter-spacing: 1px;
+  padding: 2px 5px;
+  border: 1px solid;
+  background: rgba(0, 0, 0, 0.7);
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.5s;
+  transform-origin: left top;
+  /* LOW-1: Promote to compositor layer for smooth per-frame repositioning */
+  will-change: transform;
+}
+
+.node-label--revealed {
+  opacity: 1;
+}
+
+.node-label--normal {
+  color: var(--neon-intel);
+  border-color: rgba(0, 221, 255, 0.4);
+  text-shadow: 0 0 4px rgba(0, 221, 255, 0.5);
+}
+
+.node-label--hostile {
+  color: var(--neon-red);
+  border-color: rgba(255, 34, 0, 0.5);
+  text-shadow: 0 0 6px rgba(255, 34, 0, 0.7);
+  animation: label-hostile-blink 0.8s steps(1) infinite;
+}
+
+@keyframes label-hostile-blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0.4; }
+}
+
+.node-label--ghost {
+  color: var(--neon-ghost);
+  border-color: rgba(170, 204, 255, 0.25);
+  text-shadow: 0 0 4px rgba(170, 204, 255, 0.3);
+  font-style: italic;
+  opacity: 0.6 !important;
 }
 
 /* ── Input bar ── */
@@ -170,7 +364,7 @@ button:disabled {
 }
 
 #cancel-btn:hover {
-  background: rgba(255, 0, 64, 0.1);
+  background: rgba(255, 34, 0, 0.1);
   box-shadow: 0 0 12px var(--neon-red);
 }
 
@@ -179,7 +373,7 @@ button:disabled {
   position: fixed;
   bottom: 0;
   left: 0;
-  right: 0;
+  right: 320px;  /* leave room for intel panel */
   height: 170px;
   background: rgba(0, 0, 0, 0.8);
   border-top: 1px solid rgba(0, 255, 65, 0.2);
@@ -210,7 +404,17 @@ button:disabled {
 
 .console-line.error {
   color: var(--neon-red);
-  text-shadow: 0 0 4px rgba(255, 0, 64, 0.5);
+  text-shadow: 0 0 4px rgba(255, 34, 0, 0.5);
+}
+
+.console-line.intel {
+  color: rgba(0, 221, 255, 0.8);
+  text-shadow: 0 0 3px rgba(0, 221, 255, 0.3);
+}
+
+.console-line.warning {
+  color: var(--neon-warning);
+  text-shadow: 0 0 4px rgba(255, 102, 0, 0.5);
 }
 
 @keyframes fade-in {

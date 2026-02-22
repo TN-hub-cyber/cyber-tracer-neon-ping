@@ -78,6 +78,10 @@ npx vitest run --coverage
 | `test/validation.test.js` | Input validation, injection prevention, edge cases |
 | `test/platform.test.js` | OS detection, command selection |
 | `test/runner.test.js` | Child process lifecycle, ENOENT handling, cancel, line buffering |
+| `test/classifier.test.js` | Hop classification (normal, hostile, ghost), latency delta, enrichHop immutability |
+| `test/gatherer.test.js` | WHOIS text parsing (ARIN, RIPE, APNIC, JPNIC formats), null/empty input handling |
+
+**Total: 76 tests**
 
 ### Target coverage
 
@@ -92,20 +96,26 @@ npx vitest run --coverage
 ├── server.js               # Express + Socket.IO entry point
 ├── src/
 │   ├── validation.js       # Input sanitisation (security-critical)
-│   └── tracer/
-│       ├── platform.js     # OS detection and command selection
-│       ├── parser.js       # Traceroute output parser
-│       └── runner.js       # Child process management
+│   ├── tracer/
+│   │   ├── platform.js     # OS detection and command selection
+│   │   ├── parser.js       # Traceroute output parser
+│   │   ├── runner.js       # Child process management
+│   │   └── classifier.js   # Hop classification: normal / hostile / ghost
+│   └── intel/
+│       └── gatherer.js     # DNS reverse lookup + WHOIS intel (cached, SSRF-safe)
 ├── public/
 │   ├── index.html
 │   ├── css/style.css
 │   └── js/
 │       ├── main.js         # App entry: Socket.IO ↔ Three.js integration
 │       ├── scene/          # Three.js renderer, bloom, grid, glitch
+│       │   └── crtNoise.js # CRT scan-line + pixel noise on hostile hops
 │       ├── network/        # Nodes, links, particles, shared colours
+│       │   └── nodeLabel.js# Floating country/ASN badges above 3D nodes
 │       ├── camera/         # Tracking + cinematic orbit
-│       └── ui/             # HUD and console overlay
-└── test/                   # Vitest unit/integration tests
+│       └── ui/             # HUD, console overlay, intel panel
+│           └── intelPanel.js # WHOIS/DNS side panel with typewriter animation
+└── test/                   # Vitest unit/integration tests (76 tests)
 ```
 
 ---
@@ -118,6 +128,9 @@ npx vitest run --coverage
 - **No `console.log`** in committed code
 - **Error handling**: always wrap risky operations in try/catch
 - **Security**: all user input must pass through `validateTarget()` before reaching the shell
+- **SSRF prevention**: WHOIS referral targets must be in the `ALLOWED_REGISTRIES` allowlist (see `src/intel/gatherer.js`)
+- **IP validation**: IPs are checked against `IP_PATTERN` before any network call in the intel gatherer
+- **Rate limit hygiene**: `rateLimitMap` is auto-pruned every 60 seconds to prevent unbounded growth
 
 ---
 

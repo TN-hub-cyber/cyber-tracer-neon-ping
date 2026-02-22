@@ -126,6 +126,48 @@ PORT=3001 node server.js
 
 **Fix:** Click **CANCEL** to manually terminate, then start a new trace.
 
+### WHOIS / DNS intel lookup failures
+
+**Symptom:** Intel panel cards show `???` for org, country, ASN, or all fields are blank.
+
+**Causes / fixes:**
+
+1. **WHOIS port blocked** -- Port 43 (TCP) must be open for outbound connections. Corporate firewalls and some VPNs block this. Verify with: `nc -zv whois.iana.org 43`
+2. **DNS reverse lookup timeout** -- The 5-second timeout (`LOOKUP_TIMEOUT_MS`) may be too tight on slow networks. Intel lookups are non-blocking; the trace itself still works.
+3. **IANA referral to unknown registry** -- If IANA refers to a server not in `ALLOWED_REGISTRIES`, the referral is dropped for SSRF safety. The IANA response is used as fallback, which may contain less detail.
+4. **Cache returning stale data** -- Intel is cached by IP for the lifetime of the server process. Restart the server or call `clearCache()` (exported from `src/intel/gatherer.js`) to reset.
+
+### Hops classified as hostile unexpectedly
+
+**Symptom:** Hops shown in red with CRT noise effect when they should be normal.
+
+**Cause:** A hop is classified as `hostile` when its average latency exceeds the previous hop by more than 100 ms (`HOSTILE_DELTA_MS` in `src/tracer/classifier.js`). This can happen on the first hop after a ghost (timed-out) hop since there is no baseline -- in that case the classifier defaults to `normal`.
+
+**Fix:** This is expected behavior for genuine latency spikes. If the threshold is too aggressive for your network, it can be adjusted in `classifier.js`.
+
+### Ghost hops (all `* * *`)
+
+**Symptom:** Some hops show as pale blue ghost nodes with `[???]` labels.
+
+**Cause:** The router at that hop exists but does not respond to traceroute probes (ICMP TTL exceeded suppressed). This is normal -- many ISP and backbone routers are configured this way.
+
+**Note:** Ghost hops do not trigger intel lookups (no IP to query).
+
+---
+
+## Rate Limit and Cache Behavior
+
+### Rate limit map auto-pruning
+
+The per-IP rate limit map (`rateLimitMap` in `server.js`) is pruned every 60 seconds. Entries older than 20 seconds (10x the 2-second cooldown) are removed. This prevents unbounded memory growth from many unique client IPs.
+
+### Intel cache
+
+`gatherIntel()` caches results by IP in a module-level `Map` (max 500 entries, LRU-like eviction). The cache persists for the lifetime of the server process. To clear it:
+
+- Restart the server, or
+- Import and call `clearCache()` from `src/intel/gatherer.js`
+
 ---
 
 ## Rollback Procedures
@@ -161,5 +203,9 @@ node server.js
 - The server only accepts connections from `localhost` (CORS restricted).
 - All target inputs are validated with a strict allowlist regex before reaching the shell.
 - `traceroute` is spawned via `spawn()` with an explicit args array — shell injection is not possible.
-- The server enforces a 2-second per-IP rate limit between traces.
+- The server enforces a 2-second per-IP rate limit between traces. The rate limit map is auto-pruned every 60 seconds to prevent memory growth.
 - Child processes are automatically killed after 60 seconds or on client disconnect.
+- WHOIS lookups use raw TCP (port 43) with no shell involvement, eliminating injection risk.
+- WHOIS referrals are restricted to an `ALLOWED_REGISTRIES` allowlist (5 RIRs + select NICs) to prevent SSRF via spoofed IANA responses.
+- WHOIS responses are capped at 64 KB to prevent memory DoS.
+- IP addresses are validated against a basic pattern before any network call in the intel gatherer.

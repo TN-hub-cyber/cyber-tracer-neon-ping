@@ -9,11 +9,12 @@ export function createConsole() {
   /**
    * Append a line of text to the console overlay.
    * @param {string} text
-   * @param {'normal'|'error'} type
+   * @param {'normal'|'error'|'intel'|'warning'} type
    */
   function appendLine(text, type = 'normal') {
     const line = document.createElement('div')
-    line.className = type === 'error' ? 'console-line error' : 'console-line'
+    const typeClass = type === 'normal' ? '' : ` ${type}`
+    line.className = `console-line${typeClass}`
     line.textContent = text
     container.appendChild(line)
 
@@ -26,9 +27,36 @@ export function createConsole() {
     container.scrollTop = container.scrollHeight
   }
 
+  /**
+   * Append a dramatic intel block for a discovered hop.
+   * @param {{ hop: number, ip: string, hostname: string|null,
+   *           org: string|null, country: string|null,
+   *           asn: string|null, netrange: string|null }} intel
+   */
+  function addIntel(intel) {
+    appendLine(`[INTEL >> HOP ${intel.hop}] ════════════════`, 'intel')
+    if (intel.hostname) appendLine(`  HOST    : ${intel.hostname}`, 'intel')
+    if (intel.org)      appendLine(`  ORG     : ${intel.org}`,      'intel')
+    if (intel.country)  appendLine(`  COUNTRY : ${intel.country}`,  'intel')
+    if (intel.asn)      appendLine(`  ASN     : ${intel.asn}`,      'intel')
+    if (intel.netrange) appendLine(`  RANGE   : ${intel.netrange}`, 'intel')
+  }
+
+  /**
+   * Append a warning block for a hostile hop.
+   * @param {{ hop: number, latencyDelta: number|null }} hop
+   */
+  function addWarning(hop) {
+    appendLine(`[WARNING >> HOP ${hop.hop}] ▲ LATENCY SPIKE`, 'warning')
+    if (hop.latencyDelta != null) {
+      appendLine(`  DELTA   : +${hop.latencyDelta}ms`, 'warning')
+    }
+    appendLine('  STATUS  : ANOMALOUS ROUTING', 'warning')
+  }
+
   function clear() {
     container.replaceChildren()
   }
 
-  return { appendLine, clear }
+  return { appendLine, addIntel, addWarning, clear }
 }
