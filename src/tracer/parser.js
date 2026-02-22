@@ -22,7 +22,7 @@ const LINUX_HOP_START = /^\s*(\d+)\s+(.*)/
 const WIN_TIMEOUT = /^\s*(\d+)\s+\*\s+\*\s+\*\s+Request timed out\./i
 
 /**
- * @typedef {{ hop: number, ip: string | null, latencies: number[], timedOut: boolean }} HopResult
+ * @typedef {{ hop: number, ip: string | null, latencies: number[], timedOut: boolean, partialLoss: boolean }} HopResult
  */
 
 /**
