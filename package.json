@@ -1,0 +1,21 @@
+{
+  "name": "super_ping",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "vitest run"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "CyberTracer (NEON-PING) - Network latency 3D visualization",
+  "dependencies": {
+    "express": "^5.2.1",
+    "socket.io": "^4.8.3"
+  },
+  "devDependencies": {
+    "vitest": "^4.0.18"
+  }
+}

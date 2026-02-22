@@ -1,0 +1,231 @@
+/* ============================================================
+   CyberTracer // NEON-PING — Global Styles
+   ============================================================ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --neon-cyan:   #00ffff;
+  --neon-green:  #00ff41;
+  --neon-red:    #ff0040;
+  --neon-yellow: #ffff00;
+  --bg:          #050508;
+  --panel-bg:    rgba(0, 255, 255, 0.05);
+  --panel-border:rgba(0, 255, 255, 0.3);
+  --font:        'Share Tech Mono', monospace;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--neon-cyan);
+  font-family: var(--font);
+}
+
+/* ── Three.js canvas ── */
+#scene-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
+
+/* ── HUD (pointer-events: none so canvas gets mouse events) ── */
+#hud {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.hud-panel {
+  position: absolute;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  padding: 8px 14px;
+  min-width: 140px;
+  backdrop-filter: blur(2px);
+}
+
+#hud-tl { top: 20px;    left: 20px; }
+#hud-tr { top: 20px;    right: 20px; text-align: right; }
+#hud-bl { bottom: 220px; left: 20px; }
+#hud-br { bottom: 220px; right: 20px; text-align: right; }
+
+.hud-label {
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: rgba(0, 255, 255, 0.5);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.hud-value {
+  font-size: 18px;
+  color: var(--neon-cyan);
+  text-shadow: 0 0 8px var(--neon-cyan);
+  transition: color 0.3s;
+}
+
+#hud-status {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  letter-spacing: 6px;
+  color: rgba(0, 255, 255, 0.6);
+  text-shadow: 0 0 10px var(--neon-cyan);
+  text-transform: uppercase;
+}
+
+/* Scanning line effect on HUD panels */
+.hud-panel::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 255, 255, 0.02) 2px,
+    rgba(0, 255, 255, 0.02) 4px
+  );
+  pointer-events: none;
+}
+
+/* ── Input bar ── */
+#input-bar {
+  position: fixed;
+  bottom: 180px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 20;
+  pointer-events: auto;
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid var(--panel-border);
+  padding: 10px 16px;
+  backdrop-filter: blur(4px);
+}
+
+.prompt-symbol {
+  color: var(--neon-green);
+  font-size: 14px;
+  text-shadow: 0 0 8px var(--neon-green);
+}
+
+#target-input {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--neon-green);
+  font-family: var(--font);
+  font-size: 16px;
+  width: 300px;
+  caret-color: var(--neon-green);
+  text-shadow: 0 0 4px rgba(0, 255, 65, 0.5);
+}
+
+#target-input::placeholder {
+  color: rgba(0, 255, 65, 0.25);
+}
+
+button {
+  font-family: var(--font);
+  font-size: 12px;
+  letter-spacing: 2px;
+  padding: 6px 14px;
+  background: transparent;
+  border: 1px solid var(--neon-cyan);
+  color: var(--neon-cyan);
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: background 0.2s, box-shadow 0.2s, color 0.2s;
+}
+
+button:hover {
+  background: rgba(0, 255, 255, 0.1);
+  box-shadow: 0 0 12px var(--neon-cyan);
+}
+
+button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+#cancel-btn {
+  border-color: var(--neon-red);
+  color: var(--neon-red);
+}
+
+#cancel-btn:hover {
+  background: rgba(255, 0, 64, 0.1);
+  box-shadow: 0 0 12px var(--neon-red);
+}
+
+/* ── Console overlay ── */
+#console-overlay {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 170px;
+  background: rgba(0, 0, 0, 0.8);
+  border-top: 1px solid rgba(0, 255, 65, 0.2);
+  z-index: 10;
+  overflow: hidden;
+  pointer-events: auto;
+}
+
+#console-lines {
+  height: 100%;
+  overflow-y: auto;
+  padding: 8px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 255, 65, 0.3) transparent;
+}
+
+.console-line {
+  font-size: 12px;
+  color: var(--neon-green);
+  text-shadow: 0 0 3px rgba(0, 255, 65, 0.4);
+  white-space: pre;
+  animation: fade-in 0.15s ease-out;
+  flex-shrink: 0;
+}
+
+.console-line.error {
+  color: var(--neon-red);
+  text-shadow: 0 0 4px rgba(255, 0, 64, 0.5);
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Number flicker on HUD update ── */
+@keyframes flicker {
+  0%   { opacity: 0.3; }
+  30%  { opacity: 1; }
+  60%  { opacity: 0.6; }
+  100% { opacity: 1; }
+}
+
+.hud-value.updated {
+  animation: flicker 0.25s ease-out;
+}

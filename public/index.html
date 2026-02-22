@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CyberTracer // NEON-PING</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+
+  <!-- Three.js import map -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <!-- Three.js canvas -->
+  <canvas id="scene-canvas"></canvas>
+
+  <!-- HUD overlays -->
+  <div id="hud" aria-live="polite">
+    <div id="hud-tl" class="hud-panel">
+      <div class="hud-label">TARGET</div>
+      <div id="hud-target" class="hud-value">—</div>
+    </div>
+    <div id="hud-tr" class="hud-panel">
+      <div class="hud-label">AVG LATENCY</div>
+      <div id="hud-latency" class="hud-value">—</div>
+    </div>
+    <div id="hud-bl" class="hud-panel">
+      <div class="hud-label">PKT LOSS</div>
+      <div id="hud-loss" class="hud-value">—</div>
+    </div>
+    <div id="hud-br" class="hud-panel">
+      <div class="hud-label">HOPS</div>
+      <div id="hud-hops" class="hud-value">0</div>
+    </div>
+    <div id="hud-status">IDLE</div>
+  </div>
+
+  <!-- Input bar -->
+  <div id="input-bar">
+    <span class="prompt-symbol">▶</span>
+    <input
+      id="target-input"
+      type="text"
+      placeholder="hostname or IP address"
+      autocomplete="off"
+      spellcheck="false"
+      maxlength="253"
+    />
+    <button id="trace-btn">TRACE</button>
+    <button id="cancel-btn" hidden>CANCEL</button>
+  </div>
+
+  <!-- Console overlay -->
+  <div id="console-overlay" aria-label="Traceroute output">
+    <div id="console-lines"></div>
+  </div>
+
+  <!-- Socket.io client -->
+  <script src="/socket.io/socket.io.js"></script>
+  <!-- App entry point -->
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
