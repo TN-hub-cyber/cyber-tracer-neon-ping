@@ -78,10 +78,10 @@ npx vitest run --coverage
 | `test/validation.test.js` | Input validation, injection prevention, edge cases |
 | `test/platform.test.js` | OS detection, command selection |
 | `test/runner.test.js` | Child process lifecycle, ENOENT handling, cancel, line buffering |
-| `test/classifier.test.js` | Hop classification (normal, hostile, ghost), latency delta, enrichHop immutability |
+| `test/classifier.test.js` | Hop classification (normal, hostile, ghost, lossy), lossRate computation, enrichHop immutability |
 | `test/gatherer.test.js` | WHOIS text parsing (ARIN, RIPE, APNIC, JPNIC formats), null/empty input handling |
 
-**Total: 76 tests**
+**Total: 84 tests**
 
 ### Target coverage
 
@@ -100,7 +100,7 @@ npx vitest run --coverage
 │   │   ├── platform.js     # OS detection and command selection
 │   │   ├── parser.js       # Traceroute output parser
 │   │   ├── runner.js       # Child process management
-│   │   └── classifier.js   # Hop classification: normal / hostile / ghost
+│   │   └── classifier.js   # Hop classification: normal / lossy / hostile / ghost
 │   └── intel/
 │       └── gatherer.js     # DNS reverse lookup + WHOIS intel (cached, SSRF-safe)
 ├── public/
@@ -115,7 +115,7 @@ npx vitest run --coverage
 │       ├── camera/         # Tracking + cinematic orbit
 │       └── ui/             # HUD, console overlay, intel panel
 │           └── intelPanel.js # WHOIS/DNS side panel with typewriter animation
-└── test/                   # Vitest unit/integration tests (76 tests)
+└── test/                   # Vitest unit/integration tests (84 tests)
 ```
 
 ---

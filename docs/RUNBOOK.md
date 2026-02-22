@@ -137,6 +137,22 @@ PORT=3001 node server.js
 3. **IANA referral to unknown registry** -- If IANA refers to a server not in `ALLOWED_REGISTRIES`, the referral is dropped for SSRF safety. The IANA response is used as fallback, which may contain less detail.
 4. **Cache returning stale data** -- Intel is cached by IP for the lifetime of the server process. Restart the server or call `clearCache()` (exported from `src/intel/gatherer.js`) to reset.
 
+### Lossy hops (partial packet loss)
+
+**Symptom:** Some hops show as amber flickering nodes with a dashed link leading to them. The console overlay shows `[LOSS] HOP X — Y% PACKET LOSS`.
+
+**Cause:** A hop is classified as `lossy` when at least one — but not all — of the three traceroute probes for that hop timed out (e.g. output like `192.168.1.1  * 2.345 ms *`). The `lossRate` is computed as `(3 - received) / 3`. Classification priority is: ghost > lossy > hostile > normal.
+
+**Visual indicators:**
+- Amber wireframe icosahedron node (`#ffaa00`)
+- Dashed amber link (gap width scales with `lossRate` — higher loss = wider gaps)
+- Rapid flickering opacity animation (more dropout intervals at higher `lossRate`)
+- Amber `[LOSS]` block in the console showing percentage and probe count
+
+**Note:** Lossy hops do receive WHOIS/DNS intel lookups (if an IP was returned) and will appear in the intel side panel with amber styling.
+
+**When to investigate:** Occasional lossy hops on backbone routers are expected and usually indicate ICMP rate-limiting rather than real packet loss. Persistent lossy hops on the same router across multiple traces may indicate congestion or misconfiguration.
+
 ### Hops classified as hostile unexpectedly
 
 **Symptom:** Hops shown in red with CRT noise effect when they should be normal.
