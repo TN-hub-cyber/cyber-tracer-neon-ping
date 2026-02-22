@@ -62,7 +62,7 @@ socket.on('trace-hop', (hop) => {
   const newNode  = nodes.addNode(hop)
 
   if (prevNode) {
-    links.addLink(prevNode.position, newNode.position, hop.latencies, hop.timedOut)
+    links.addLink(prevNode.position, newNode.position, hop.latencies, hop.timedOut, hop.type, hop.lossRate)
     pulses.addPulse(prevNode.position, newNode.position, resolveColor(hop.latencies, hop.timedOut))
   }
 
@@ -79,6 +79,10 @@ socket.on('trace-hop', (hop) => {
   if (hop.type === 'hostile') {
     crt.trigger()
     consoleUI.addWarning(hop)
+  }
+
+  if (hop.type === 'lossy') {
+    consoleUI.addLossWarning(hop)
   }
 
   // Update stats (immutable)
@@ -216,6 +220,16 @@ function animate() {
         auraMesh.position.y = mesh.position.y
       }
       mesh.scale.setScalar(1 + Math.sin(elapsed * 0.9) * 0.04)
+    } else if (hop.type === 'lossy') {
+      // Flicker: high-freq sine gives rapid opacity changes
+      // sin(35t) creates blackout intervals; more blackouts when lossRate is high
+      const flicker = Math.abs(Math.sin(elapsed * 18 + position.x * 5))
+      const blackout = Math.sin(elapsed * 35 + position.x) > (0.3 + (hop.lossRate ?? 0.33) * 0.5)
+        ? 1.0
+        : 0.12
+      mesh.material.opacity = flicker * blackout
+      const s = 1 + Math.sin(elapsed * 5 + position.x) * 0.12
+      mesh.scale.setScalar(s)
     } else {
       // Standard gentle pulse
       const s = 1 + Math.sin(elapsed * 2 + mesh.position.x) * 0.05
