@@ -16,6 +16,7 @@
   --neon-ghost:   #aaccff;
   --neon-intel:   #00ddff;
   --neon-warning: #ff6600;
+  --neon-loss:    #ffaa00;
   --bg:           #050508;
   --panel-bg:     rgba(0, 255, 255, 0.05);
   --panel-border: rgba(0, 255, 255, 0.3);
@@ -229,7 +230,7 @@ html, body {
 }
 
 .intel-card--lossy .intel-card__header {
-  color: #ffaa00;
+  color: var(--neon-loss);
 }
 
 .intel-card--lossy .intel-card__body {
@@ -310,7 +311,7 @@ html, body {
 }
 
 .node-label--lossy {
-  color: #ffaa00;
+  color: var(--neon-loss);
   text-shadow: 0 0 8px rgba(255, 170, 0, 0.7);
 }
 
@@ -437,7 +438,7 @@ button:disabled {
 }
 
 .console-line.loss {
-  color: #ffaa00;
+  color: var(--neon-loss);
 }
 
 @keyframes fade-in {

@@ -6,7 +6,7 @@ const makeHop = (hop, ip, latencies) =>
   Object.freeze({ hop, ip, latencies, timedOut: false, partialLoss: false })
 
 const makeGhostHop = (hop) =>
-  Object.freeze({ hop, ip: null, latencies: [], timedOut: true })
+  Object.freeze({ hop, ip: null, latencies: [], timedOut: true, partialLoss: false })
 
 const makeLossyHop = (hop, ip, latencies) =>
   Object.freeze({ hop, ip, latencies, timedOut: false, partialLoss: true })

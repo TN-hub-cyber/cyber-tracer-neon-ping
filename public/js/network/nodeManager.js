@@ -3,7 +3,7 @@ import { resolveColor } from './colors.js'
 
 /**
  * Manages wireframe icosahedron nodes in the 3D scene.
- * Supports three node types: normal, hostile, ghost.
+ * Supports four node types: normal, hostile, ghost, lossy.
  *
  * @param {THREE.Scene} scene
  */

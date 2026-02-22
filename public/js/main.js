@@ -224,10 +224,8 @@ function animate() {
       // Flicker: high-freq sine gives rapid opacity changes
       // sin(35t) creates blackout intervals; more blackouts when lossRate is high
       const flicker = Math.abs(Math.sin(elapsed * 18 + position.x * 5))
-      const blackout = Math.sin(elapsed * 35 + position.x) > (0.3 + (hop.lossRate ?? 0.33) * 0.5)
-        ? 1.0
-        : 0.12
-      mesh.material.opacity = flicker * blackout
+      const isBlackout = Math.sin(elapsed * 35 + position.x) <= (0.3 + (hop.lossRate ?? 0.33) * 0.5)
+      mesh.material.opacity = flicker * (isBlackout ? 0.12 : 1.0)
       const s = 1 + Math.sin(elapsed * 5 + position.x) * 0.12
       mesh.scale.setScalar(s)
     } else {

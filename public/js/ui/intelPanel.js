@@ -2,7 +2,7 @@
  * Intel Panel — right-side sliding overlay showing WHOIS/DNS data per hop.
  *
  * Cards appear as intel arrives (typewriter reveal), newest at top.
- * Each card is color-coded by hop type: normal=cyan, hostile=red, ghost=blue.
+ * Each card is color-coded by hop type: normal=cyan, hostile=red, ghost=blue, lossy=amber.
  */
 
 const MAX_CARDS = 12
