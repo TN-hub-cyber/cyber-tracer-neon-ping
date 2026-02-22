@@ -93,13 +93,24 @@ sudo node server.js
 
 **Symptom:** `Error: listen EADDRINUSE :::3000`
 
+**Diagnose:** Identify which process owns the port:
+
+```bash
+ss -tlnp | grep 3000
+# Example output: users:(("next-server (v1",pid=27591,...))
+```
+
+Common culprits: Next.js dev server, React dev server, other Node apps — all default to port 3000.
+
 **Fix:**
 
 ```bash
-# Find and kill the process using port 3000
-lsof -ti :3000 | xargs kill
-# Or use a different port
+# Option A — use a different port (safe, leaves other service running)
 PORT=3001 node server.js
+
+# Option B — kill the process occupying port 3000
+kill $(ss -tlnp | grep 3000 | grep -oP 'pid=\K[0-9]+')
+node server.js
 ```
 
 ### WebGL not available
