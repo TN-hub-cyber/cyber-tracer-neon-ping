@@ -48,6 +48,16 @@ export function createNodeManager(scene) {
     return { mesh, auraMesh }
   }
 
+  function buildLossyNode() {
+    const material = new THREE.MeshBasicMaterial({
+      color: 0xffaa00,
+      wireframe: true,
+      transparent: true,
+      opacity: 1.0,
+    })
+    return new THREE.Mesh(nodeGeometry, material)
+  }
+
   // ── Public methods ──────────────────────────────────────
 
   /**
@@ -86,6 +96,17 @@ export function createNodeManager(scene) {
       scene.add(mesh)
 
       light = new THREE.PointLight(0xff2200, 2.5, 8)
+      light.position.copy(position)
+      scene.add(light)
+      auraMesh = null
+
+    } else if (hop.type === 'lossy') {
+      // Lossy: amber wireframe, transparent for flicker animation
+      mesh = buildLossyNode()
+      mesh.position.copy(position)
+      scene.add(mesh)
+
+      light = new THREE.PointLight(0xffaa00, 1.5, 6)
       light.position.copy(position)
       scene.add(light)
       auraMesh = null
